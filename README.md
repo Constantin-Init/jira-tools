@@ -14,7 +14,7 @@ Replace the values of parameters `uri`, `username`, and `password` in method
 
 ```
 @BeforeAll
-static void setupTests() {
+public static void setupTests() {
     jiraEstimatesCalculator = new JiraEstimatesCalculator("http://example.com", "jirauser", "secret");
 }
 ```
@@ -24,7 +24,7 @@ Replace the value of parameter `jql` in method
 
 ```
 @Test
-void testCalculateRemainingEstimates() {
+public void testCalculateRemainingEstimates() {
     int estimates = jiraEstimatesCalculator.calculateRemainingEstimates("project = DEMO");
 
     Assertions.assertTrue(estimates > -1);
