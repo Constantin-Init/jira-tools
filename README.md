@@ -31,7 +31,18 @@ public void testCalculateRemainingEstimates() {
 }
 ```
 
-Then run the unit test `de.phib.jira.JiraEstimatesCalculatorTest.testCalculateRemainingEstimates`.
+Then run the unit test `de.phib.jira.JiraEstimatesCalculatorTest.testCalculateRemainingEstimates`. The sum of the 
+remaining estimates will be written to stdout, together with some further information.
+
+Example:
+```
+[main] INFO de.phib.jira.JiraEstimatesCalculator - Starting search...
+[main] INFO de.phib.jira.JiraEstimatesCalculator - Search query: project = DEMO
+[main] INFO de.phib.jira.JiraEstimatesCalculator - Search finished.
+[main] INFO de.phib.jira.JiraEstimatesCalculator - Number of results: 322
+[main] INFO de.phib.jira.JiraEstimatesCalculator - Remaining estimates (in seconds): 7452000
+[main] INFO de.phib.jira.JiraEstimatesCalculator - Remaining estimates (in working days): 258.75
+```
 
 ## License
 
