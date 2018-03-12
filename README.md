@@ -31,6 +31,8 @@ public void testCalculateRemainingEstimates() {
 }
 ```
 
+Then run the unit test `de.phib.jira.JiraEstimatesCalculatorTest.testCalculateRemainingEstimates`.
+
 ## License
 
 [MIT](LICENSE)
