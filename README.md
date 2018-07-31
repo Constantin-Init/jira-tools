@@ -40,12 +40,12 @@ remaining estimates will be written to stdout, together with some further inform
 
 Example:
 ```
-[main] INFO de.phib.jiratools.CalculateRemainingEstimates - Starting search...
-[main] INFO de.phib.jiratools.CalculateRemainingEstimates - Search query: project = DEMO
-[main] INFO de.phib.jiratools.CalculateRemainingEstimates - Search finished.
-[main] INFO de.phib.jiratools.CalculateRemainingEstimates - Number of results: 322
-[main] INFO de.phib.jiratools.CalculateRemainingEstimates - Remaining estimates (in seconds): 7452000
-[main] INFO de.phib.jiratools.CalculateRemainingEstimates - Remaining estimates (in working days): 258.75
+[main] INFO de.phib.jiratools.JiraApiConnector - Starting search...
+[main] INFO de.phib.jiratools.JiraApiConnector - Search query: project = DEMO
+[main] INFO de.phib.jiratools.JiraApiConnector - Search finished.
+[main] INFO de.phib.jiratools.JiraApiConnector - Number of results: 322
+[main] INFO de.phib.jiratools.tools.CalculateRemainingEstimates - Remaining estimates (in seconds): 7452000
+[main] INFO de.phib.jiratools.tools.CalculateRemainingEstimates - Remaining estimates (in working days): 258.75
 ```
 
 ### Release Notes
@@ -66,10 +66,10 @@ remaining estimates will be written to stdout, together with some further inform
 
 Example:
 ```
-[main] INFO de.phib.jiratools.tools.CalculateRemainingEstimates - Starting search...
-[main] INFO de.phib.jiratools.tools.CalculateRemainingEstimates - Search query: project = DEMO AND fixVersion = 1.0 AND level = "public" ORDER BY issuetype DESC, key ASC
-[main] INFO de.phib.jiratools.tools.CalculateRemainingEstimates - Search finished.
-[main] INFO de.phib.jiratools.tools.CalculateRemainingEstimates - Number of results: 3
+[main] INFO de.phib.jiratools.JiraApiConnector - Starting search...
+[main] INFO de.phib.jiratools.JiraApiConnector - Search query: project = DEMO AND fixVersion = 1.0 AND level = "public" ORDER BY issuetype DESC, key ASC
+[main] INFO de.phib.jiratools.JiraApiConnector - Search finished.
+[main] INFO de.phib.jiratools.JiraApiConnector - Number of results: 3
 [main] INFO de.phib.jiratools.tools.GenerateReleaseNotes - Release Notes:
 
 DEMO-1: Issue #1

@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class JiraApiConnector {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CalculateRemainingEstimates.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JiraApiConnector.class);
 
     private static final int SEARCH_MAX_RESULTS = 10_000;
 
