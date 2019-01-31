@@ -23,7 +23,6 @@ public class JiraToolsTest {
 
     private static final String JIRA_PASSWORD = "password";
     private static final String JIRA_USERNAME = "username";
-    private static final String CURRENT_VERSION = "2019.1.2";
 
     private static final String GIT_ANSIBLE_REPO_PATH = "F:/bpa/ansible-workspace";
     private static final String GIT_DXP_REPO_PATH = "F:/bpa/dxp-blueprint";
@@ -125,10 +124,10 @@ public class JiraToolsTest {
                 .filter(issue -> !aliases.containsKey(issue) || !jiraIssueKeys.contains(aliases.get(issue)))
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.toList());
-        commitsNoTicketList.forEach(s -> LOG.warn("{}: mentioned in commit(s) {} but not tagged as fixed in version {} in JIRA. Set FixVersions: {}. Status: {}",
+        commitsNoTicketList.forEach(s -> LOG.warn("{}: mentioned in commit(s) {} but not tagged as fixed in version(s) {} in JIRA. Set FixVersions: {}. Status: {}",
                 s,
                 GitTools.getAbbrCommitList(effectedIssues.get(s)),
-                CURRENT_VERSION,
+                String.join(",", JIRA_VERSIONS),
                 jiraTools.getFixVersionsAsString(issueMap, s),
                 jiraTools.getIssue(issueMap, s) != null ? jiraTools.getIssue(issueMap, s).getStatus().getName() : "doesn't exist"));
 
