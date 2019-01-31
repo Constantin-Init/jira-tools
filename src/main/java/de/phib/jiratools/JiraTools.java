@@ -126,10 +126,12 @@ public class JiraTools {
                 String statusjoined = status.stream()
                         .map(s -> "\"" + s + "\"")
                         .collect(Collectors.joining(","));
-                jql += "AND status IN ( " + statusjoined + ") AND level = \"public\" ";
+                jql += "AND status IN ( " + statusjoined + ")";
+
 
             }
 
+            jql += " AND level = \"public\" ";
             jql += "ORDER BY key ASC";
             Iterable<Issue> issues = getJiraApiConnector().searchIssues(jql);
             Map<String, Issue> issueMap = StreamSupport.stream(issues.spliterator(), false).collect(Collectors.toMap(BasicIssue::getKey, i -> i));
