@@ -7,7 +7,6 @@ import com.atlassian.jira.rest.client.api.domain.Issue;
 import com.atlassian.jira.rest.client.api.domain.SearchResult;
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
 import com.atlassian.util.concurrent.Promise;
-import de.phib.jiratools.tools.CalculateRemainingEstimates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +21,9 @@ public class JiraApiConnector {
 
     private static final Logger LOG = LoggerFactory.getLogger(JiraApiConnector.class);
 
-    private static final int SEARCH_MAX_RESULTS = 10_000;
+    private static final int SEARCH_MAX_RESULTS = 10000;
 
-    private SearchRestClient searchClient;
+    private JiraRestClient jiraRestClient;
 
     /**
      * Creates a new instance of JiraApiConnector.
@@ -35,10 +34,9 @@ public class JiraApiConnector {
      */
     public JiraApiConnector(String uri, String username, String password) {
         try {
-            final AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
-            final URI jiraUri = new URI(uri);
-            final JiraRestClient jiraRestClient = factory.createWithBasicHttpAuthentication(jiraUri, username, password);
-            this.searchClient = jiraRestClient.getSearchClient();
+            AsynchronousJiraRestClientFactory clientFactory = new AsynchronousJiraRestClientFactory();
+            URI jiraUri = new URI(uri);
+            this.jiraRestClient = clientFactory.createWithBasicHttpAuthentication(jiraUri, username, password);
         } catch (URISyntaxException e) {
             LOG.error("An error occurred while creating the JiraRestClient. The syntax of given URL '" + uri + "' is invalid.", e);
         }
@@ -57,20 +55,26 @@ public class JiraApiConnector {
         Iterable<Issue> issues = Iterables.emptyIterable();
 
         try {
-            LOG.info("Starting search...");
-            LOG.info("Search query: " + jql);
+            LOG.debug("Starting search...");
+            LOG.debug("Search query: {}", jql);
 
-            Promise<SearchResult> result = this.searchClient.searchJql(jql, SEARCH_MAX_RESULTS, 0, null);
+            Promise<SearchResult> result = getSearchClient().searchJql(jql, SEARCH_MAX_RESULTS, 0, null);
             SearchResult resultObject = result.get();
             issues = resultObject.getIssues();
 
-            LOG.info("Search finished.");
-            LOG.info("Number of results: " + resultObject.getTotal());
-        } catch (InterruptedException | ExecutionException e) {
+            LOG.debug("Search finished.");
+            LOG.debug("Number of results: {}", resultObject.getTotal());
+        } catch (InterruptedException e) {
+            LOG.error("An error occurred during the search for issues with the query '" + jql + "'.", e);
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException e) {
             LOG.error("An error occurred during the search for issues with the query '" + jql + "'.", e);
         }
 
         return issues;
     }
 
+    private SearchRestClient getSearchClient() {
+        return jiraRestClient.getSearchClient();
+    }
 }
