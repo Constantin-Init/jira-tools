@@ -12,24 +12,34 @@ Provides the functionality to execute a search for issues in JIRA based on a giv
 
 ### Preparation
 
-Replace the values of parameters `uri`, `username`, and `password` in method 
-`de.phib.jiratools.JiraToolsTest.setupTests` with the connection details for your JIRA instance.
+In `de.phib.ToolDataConstants`, replace the value of the following variables:
+- JIRA_URL
+- JIRA_USERNAME
+- JIRA_PASSWORD
+- GIT_DXP_REPO_PATH
+- GIT_ANSIBLE_REPO_PATH
+- GIT_SSH_PASSWORD (optional: passphrase for git ssh cert)
+
+These are used for Test execution.
+
 
 ```
 @BeforeAll
 public static void setupTests() {
-    jiraTools = new JiraTools("http://example.com", "jirauser", "secret");
+    jiraTools = new JiraTools(JIRA_URL, JIRA_USERNAME, JIRA_PASSWORD);
+    dxpGitTools = new GitTools(GIT_DXP_REPO_PATH);
+    ansibleGitTools = new GitTools(GIT_ANSIBLE_REPO_PATH);
 }
 ```
 
 ### Remaining Estimates
 
-Replace the value of parameter `jql` in method `testCalculateRemainingEstimates` with your search query.
+In `de.phib.jiratools.JiraToolsTest`, replace the value of the variables `JIRA_REMAINING_ESTIMATES_QUERY`
 
 ```
 @Test
 public void testCalculateRemainingEstimates() {
-    int estimates = jiraTools.calculateRemainingEstimates("project = DEMO");
+    int estimates = jiraTools.calculateRemainingEstimates(JIRA_REMAINING_ESTIMATES_QUERY);
 
     Assertions.assertTrue(estimates > -1);
 }
@@ -50,14 +60,16 @@ Example:
 
 ### Release Notes
 
-Replace the value of parameter `jql` in method `testGenerateReleaseNotes` with your search query.
+In `de.phib.jiratools.JiraToolsTest`, replace the value of the following variables:
+- JIRA_VERSIONS
+- JIRA_PROJECTS
+- JIRA_STATUS_LIST
 
 ```
 @Test
 public void testGenerateReleaseNotes() {
-    String releaseNotes = jiraTools.generateReleaseNotes("project = DEMO AND fixVersion = 1.0 AND level = \"public\" ORDER BY issuetype DESC, key ASC");
-
-    Assertions.assertTrue(releaseNotes != null);
+    Map<String, Issue> issuesForVersion = jiraTools.getIssuesForVersion(JIRA_VERSIONS, JIRA_PROJECTS, JIRA_STATUS_LIST);
+    jiraTools.generateReleaseNotes(issuesForVersion.values());
 }
 ```
 

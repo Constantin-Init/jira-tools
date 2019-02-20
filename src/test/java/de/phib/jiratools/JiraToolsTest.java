@@ -15,36 +15,30 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static de.phib.ToolDataConstants.*;
+
 /**
  * Unit tests for the class JiraTools.
  */
 public class JiraToolsTest {
     private static final Logger LOG = LoggerFactory.getLogger(JiraToolsTest.class);
 
-    private static final String JIRA_PASSWORD = "password";
-    private static final String JIRA_USERNAME = "username";
-
-    private static final String GIT_ANSIBLE_REPO_PATH = "F:/bpa/ansible-workspace";
-    private static final String GIT_DXP_REPO_PATH = "F:/bpa/dxp-blueprint";
-
-    private static final String DXP_CURRENT_VERSION_TAG = "blueprint-2019.1.2";
-    private static final String DXP_PREVIOUS_VERSION_TAG = "blueprint-2018.27.12";
-    private static final String ANSIBLE_CURRENT_VERSION_TAG = "2019.1.2";
-    private static final String ANSIBLE_PREVIOUS_VERSION_TAG = "2018.27.6";
-
-    private static final List<String> JIRA_PROJECTS = Arrays.asList("BPA", "BREGNEU");
-    private static final List<String> JIRA_VERSIONS = Arrays.asList("2019.1", "2019.1.1", "2019.1.2");
-
     private static JiraTools jiraTools;
     private static GitTools dxpGitTools;
     private static GitTools ansibleGitTools;
+
+    private static final List<String> JIRA_PROJECTS = Arrays.asList("BPA", "BREGNEU");
+    private static final List<String> JIRA_VERSIONS = Arrays.asList("2019.2");
+    private static final List<String> JIRA_STATUS_LIST = Arrays.asList("Ready To Deploy", "QA Stage", "QA Stage BPA", "QA Prod", "QA Prod BPA", "Fertig", "Done");
+
+    public static final String JIRA_REMAINING_ESTIMATES_QUERY = "project in (\"BPA BREG Relaunch\", Bundespresseamt)";
 
     /**
      * Creates an instance of JiraTools to be used in the unit tests.
      */
     @BeforeAll
-    public static void setupTests() {
-        jiraTools = new JiraTools("https://issues.init.de", JIRA_USERNAME, JIRA_PASSWORD);
+    static void setupTests() {
+        jiraTools = new JiraTools(JIRA_URL, JIRA_USERNAME, JIRA_PASSWORD);
         dxpGitTools = new GitTools(GIT_DXP_REPO_PATH);
         ansibleGitTools = new GitTools(GIT_ANSIBLE_REPO_PATH);
     }
@@ -53,25 +47,26 @@ public class JiraToolsTest {
      * Tests the method CalculateRemainingEstimates#getRemainingEstimates(java.lang.String).
      */
     @Test
-    public void testCalculateRemainingEstimates() {
-        int estimates = jiraTools.calculateRemainingEstimates("project = DEMO");
+    void testCalculateRemainingEstimates() {
+        int estimates = jiraTools.calculateRemainingEstimates(JIRA_REMAINING_ESTIMATES_QUERY);
 
         Assertions.assertTrue(estimates > -1);
     }
 
     @Test
-    public Map<String, Set<RevCommit>> getEffectedIssuesFromGit() {
+    Map<String, Set<RevCommit>> getEffectedIssuesFromGit() {
         Map<String, Set<RevCommit>> effectedIssues = dxpGitTools.getEffectedIssues(DXP_PREVIOUS_VERSION_TAG, DXP_CURRENT_VERSION_TAG);
         Map<String, Set<RevCommit>> effectedAnsibleIssues = ansibleGitTools.getEffectedIssues(ANSIBLE_PREVIOUS_VERSION_TAG, ANSIBLE_CURRENT_VERSION_TAG);
 
         effectedAnsibleIssues.forEach((key, value) -> effectedIssues.merge(key, value, Sets::union));
+        LOG.info("");
         LOG.info("Git changed issues");
         effectedIssues.forEach((key, value) -> LOG.info("{} mentioned in commits {}", key, GitTools.getAbbrCommitList(value)));
         return effectedIssues;
     }
 
     @Test
-    public Map<String, Issue> findChangedIssueKeysFromJira() {
+    Map<String, Issue> findChangedIssueKeysFromJira() {
         return new TreeMap<>(jiraTools.getIssuesForVersion(JIRA_VERSIONS, JIRA_PROJECTS));
     }
 
@@ -87,6 +82,7 @@ public class JiraToolsTest {
                 .collect(Collectors.toMap(BasicIssue::getKey, i -> i));
 
         Set<String> jiraKeys = publicIssues.keySet();
+        LOG.info("");
         LOG.info("**Public Issues**");
         jiraKeys.forEach(i -> LOG.info("{}", i));
 
@@ -96,6 +92,7 @@ public class JiraToolsTest {
         ArrayList<String> publicIssuesWithCodeChanges = Lists.newArrayList(intersection);
         publicIssuesWithCodeChanges.sort(Comparator.naturalOrder());
 
+        LOG.info("");
         LOG.info("**Public Issues**");
         for (String i : publicIssuesWithCodeChanges) {
             Issue issue = publicIssues.get(i);
@@ -106,7 +103,6 @@ public class JiraToolsTest {
             String level = jiraTools.getIssueLevel(issue);
             LOG.info("{};\"{}\";{};{};{};{}", i, summary, issueType, level, status, assignee);
         }
-
     }
 
     @Test
@@ -136,9 +132,6 @@ public class JiraToolsTest {
         jiraNoCommitList.stream()
                 .filter(issue -> !aliases.containsValue(issue))
                 .forEach(s -> LOG.warn("{} mentioned as fixed in JIRA but no commits found", s));
-
-
-
     }
 
 
@@ -146,9 +139,8 @@ public class JiraToolsTest {
      * Tests the method CalculateRemainingEstimates#getRemainingEstimates(java.lang.String).
      */
     @Test
-    public void testGenerateReleaseNotes() {
-        List<String> statusList = Arrays.asList("Ready To Deploy", "QA Stage", "QA Stage BPA", "QA Prod", "QA Prod BPA", "Fertig", "Done");
-        Map<String, Issue> issuesForVersion = jiraTools.getIssuesForVersion(JIRA_VERSIONS, JIRA_PROJECTS, statusList);
+    void testGenerateReleaseNotes() {
+        Map<String, Issue> issuesForVersion = jiraTools.getIssuesForVersion(JIRA_VERSIONS, JIRA_PROJECTS, JIRA_STATUS_LIST);
         jiraTools.generateReleaseNotes(issuesForVersion.values());
     }
 

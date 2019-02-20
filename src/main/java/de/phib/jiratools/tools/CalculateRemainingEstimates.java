@@ -12,6 +12,10 @@ public class CalculateRemainingEstimates {
 
     private static final Logger LOG = LoggerFactory.getLogger(CalculateRemainingEstimates.class);
 
+    private CalculateRemainingEstimates() {
+        // no op
+    }
+
     /**
      * Returns the sum of the remaining estimates of the given issues.
      *
@@ -25,8 +29,8 @@ public class CalculateRemainingEstimates {
             estimates += getRemainingEstimateFromField(issue);
         }
 
-        LOG.info("Remaining estimates (in seconds): " + estimates);
-        LOG.info("Remaining estimates (in working days): " + ((double) estimates) / (60 * 60 * 8));
+        LOG.info("Remaining estimates (in seconds): {}", estimates);
+        LOG.info("Remaining estimates (in working days): {}", ((double) estimates) / (60 * 60 * 8));
 
         return estimates;
     }

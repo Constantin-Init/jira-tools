@@ -1,13 +1,21 @@
 package de.phib.jgit;
 
 import com.google.common.collect.Maps;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UserInfo;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.OpenSshConfig;
+import org.eclipse.jgit.transport.SshSessionFactory;
+import org.eclipse.jgit.transport.SshTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +27,49 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static de.phib.ToolDataConstants.GIT_SSH_PASSWORD;
+
 public class GitTools {
     private static final String ISSUE_REGEX = "([A-Z]+-[0-9]+)";
     private static final Logger LOG = LoggerFactory.getLogger(GitTools.class);
     private final String path;
+
+    SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
+        @Override
+        protected void configure(OpenSshConfig.Host host, Session session) {
+            session.setUserInfo(new UserInfo() {
+                @Override
+                public String getPassphrase() {
+                    return GIT_SSH_PASSWORD;
+                }
+
+                @Override
+                public String getPassword() {
+                    return null;
+                }
+
+                @Override
+                public boolean promptPassword(String message) {
+                    return false;
+                }
+
+                @Override
+                public boolean promptPassphrase(String message) {
+                    return true;
+                }
+
+                @Override
+                public boolean promptYesNo(String message) {
+                    return false;
+                }
+
+                @Override
+                public void showMessage(String message) {
+                    // no op
+                }
+            });
+        }
+    };
 
     public GitTools(String path) {
         this.path = path;
@@ -30,6 +77,7 @@ public class GitTools {
 
     /**
      * Returns an abbreviated list of commit hashes
+     *
      * @param value
      * @return
      */
@@ -51,7 +99,16 @@ public class GitTools {
         File gitDir = new File(path);
 
         try (Git gitRepo = Git.open(gitDir)) {
-            gitRepo.fetch().call();
+            FetchCommand fetch = gitRepo.fetch();
+            if (StringUtils.isNotEmpty(GIT_SSH_PASSWORD)) {
+                fetch = fetch.setTransportConfigCallback(transport -> {
+                    SshTransport sshTransport = (SshTransport) transport;
+                    sshTransport.setSshSessionFactory(sshSessionFactory);
+
+                });
+            }
+            fetch.call();
+
             List<Ref> tags = gitRepo.tagList().call();
             Optional<Ref> lastReleaseTagRef = tags.stream().filter(ref -> ref.getName().contains(lastReleaseTag)).findFirst();
             Optional<Ref> currentReleaseTagRef = tags.stream().filter(ref -> ref.getName().contains(currentReleaseTag)).findFirst();

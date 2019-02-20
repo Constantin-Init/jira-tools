@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Provides the functionality to execute a search for issues in JIRA based on a given JQL search query
@@ -64,11 +63,8 @@ public class JiraApiConnector {
 
             LOG.debug("Search finished.");
             LOG.debug("Number of results: {}", resultObject.getTotal());
-        } catch (InterruptedException e) {
-            LOG.error("An error occurred during the search for issues with the query '" + jql + "'.", e);
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException e) {
-            LOG.error("An error occurred during the search for issues with the query '" + jql + "'.", e);
+        } catch (Exception e) {
+            LOG.error("An error occurred during the search for issues with the query '{}'.", jql, e);
         }
 
         return issues;
